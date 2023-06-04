@@ -13,14 +13,14 @@ patterns:
     
 theme: /
 
-    state: Change password
-        q!: * $password *
-        q: * {($change|$lost|$restore|$create|$err|проблем*) * $password} *
-        q: * {[как*|где] * ($findOut|ввест*|ввод*|запис*|запиш*|выда*|получ*|провер*|управл*|сохран*|хранит*|хранят*) * $password} *
+    state: Start
+        q!: $regex</start>
         a: Здравствуйте.
-        go!: /Specify
 
     state: Specify
+        q!: * $password *
+        q!: * {($change|$lost|$restore|$create|$err|проблем*) * $password} *
+        q!: * {[как*|где] * ($findOut|ввест*|ввод*|запис*|запиш*|выда*|получ*|провер*|управл*|сохран*|хранит*|хранят*) * $password} *
         a: Сейчас расскажу порядок действий.
             Выберите, что именно планируете сделать:
             1. Поменять пароль для входа в приложение.
@@ -29,10 +29,10 @@ theme: /
             
     state: App
         q: [$oneWord] (1*|перв*|один*|един*|$app) [$oneWord] || fromState = "/Specify"
-        q: * {$password * $app} *
-        q: * {$password * (вход*|вхожд*|доступ*|зайт*|зайд*) * [$app]} *
-        q: * {($change|$lost|$restore|$create|$err|проблем*) * $password * ($app|вход*|доступ*)} *
-        q: * {{[как*|где] * ($findOut|ввест*|ввод*|запис*|запиш*|выда*|получ*|провер*|управл*|сохран*|хранит*|хранят*)} * $password * $app} *
+        q!: * {$password * $app} *
+        q!: * {$password * (вход*|вхожд*|доступ*|зайт*|зайд*) * [$app]} *
+        q!: * {($change|$lost|$restore|$create|$err|проблем*) * $password * ($app|вход*|доступ*)} *
+        q!: * {{[как*|где] * ($findOut|ввест*|ввод*|запис*|запиш*|выда*|получ*|провер*|управл*|сохран*|хранит*|хранят*)} * $password * $app} *
         a: Смена пароля от приложения возможна несколькими способами:
             1. на экране "Профиль" выберите "Изменить код входа в приложение".
             2. введите SMS-код.
@@ -61,12 +61,12 @@ theme: /
     
     state: Card
         q: [$oneWord] (2*|втор*|два*|карт*) [$oneWord] || fromState = "/Specify"
-        q: * {($password|qr-код*|(кьюар*|куар*|qr) [код*]) * (покуп*|плат*|оплат*|оплач*|заплат*|зачисл*|купит*|счёт*|счет*|перевод*|перевест*)} *
-        q: * {$password * карт*} *
-        q: * {($change|$lost|$restore|$create|$err|проблем*) * $password * карт*} *
-        q: * {{($change|$lost|$restore|$create|$err|проблем*) * $password * карт*} * [$app]} *
-        q: * {{($change|$lost|$restore|$create|$err|проблем*) * [$app] * $password} * карт*} *
-        q: * {{[как*|где] * ($findOut|ввест*|ввод*|запис*|запиш*|выда*|получ*|провер*|управл*|сохран*|хранит*|хранят*)} * $password * карт*} *
+        q!: * {($password|qr-код*|(кьюар*|куар*|qr) [код*]) * (покуп*|плат*|оплат*|оплач*|заплат*|зачисл*|купит*|счёт*|счет*|перевод*|перевест*)} *
+        q!: * {$password * карт*} *
+        q!: * {($change|$lost|$restore|$create|$err|проблем*) * $password * карт*} *
+        q!: * {{($change|$lost|$restore|$create|$err|проблем*) * $password * карт*} * [$app]} *
+        q!: * {{($change|$lost|$restore|$create|$err|проблем*) * [$app] * $password} * карт*} *
+        q!: * {{[как*|где] * ($findOut|ввест*|ввод*|запис*|запиш*|выда*|получ*|провер*|управл*|сохран*|хранит*|хранят*)} * $password * карт*} *
         a: Это можно сделать в приложении:
             1. На экране "Мои деньги" в разделе "Карты" нажмите на нужную.
             2. Выберите вкладку "Настройки".
@@ -81,11 +81,15 @@ theme: /
             go!: /Bye
             
     state: Bye
-        script:
-            $jsapi.stopSession()
         a: Приятно было пообщаться. Всегда готов помочь вам снова.
+        EndSession:
 
     state: timeLimit
         event: timeLimit || fromState = "/Specify"
-        script:
-            $jsapi.stopSession()
+        EndSession:
+            
+    state: NoMatch
+        event!: noMatch
+        a: Извините, я вас не понял.
+
+
